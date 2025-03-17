@@ -3,8 +3,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy the project file and restore dependencies
-COPY ["src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj", "src/Server/Services/LeaderBoard.GameEventsProcessor/"]
-WORKDIR "/src/Server/Services/LeaderBoard.GameEventsProcessor"
+COPY ["src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj", "./"]
+WORKDIR "/src"
 RUN dotnet restore
 
 # Copy the rest of the application and build it
