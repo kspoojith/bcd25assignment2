@@ -1,28 +1,26 @@
-# Use the official .NET SDK image to build the application
+# Use the .NET SDK to build the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
 
-# Set the working directory
-WORKDIR /src/Server/Services/LeaderBoard.GameEventsProcessor
-
-# Copy the project file and restore dependencies
-COPY ["src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj", "./"]
+# Copy the project files and restore dependencies (to leverage caching)
+COPY ["src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj", "src/Server/Services/LeaderBoard.GameEventsProcessor/"]
+WORKDIR "/src/Server/Services/LeaderBoard.GameEventsProcessor"
 RUN dotnet restore
 
-# Copy the rest of the application source code and build it
-COPY ["src/Server/Services/LeaderBoard.GameEventsProcessor/", "./"]
+# Copy the entire source code and build the application
+COPY . .
+WORKDIR "/src/Server/Services/LeaderBoard.GameEventsProcessor"
 RUN dotnet build --configuration Release --output /app/build
 
 # Publish the application
 RUN dotnet publish --configuration Release --output /app/publish
 
-# Use ASP.NET Core runtime image to run the app
+# Use the ASP.NET Core runtime image to run the app
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-
-# Set the working directory
 WORKDIR /app
 
-# Copy the published application from the build stage
+# Copy the published application
 COPY --from=build /app/publish .
 
-# Set the entry point for the application
+# Set the entry point
 ENTRYPOINT ["dotnet", "LeaderBoard.GameEventsProcessor.dll"]
