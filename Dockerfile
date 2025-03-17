@@ -1,18 +1,23 @@
 # Use the official .NET SDK image for building the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /src
+# Set the working directory inside the container
+WORKDIR /app
 
-# Copy everything from the source folder to the container
-COPY . .
+# Copy the solution file first
+COPY leaderboard.sln ./
 
-# Ensure we are in the correct directory
-WORKDIR /app  # Change this to where your .sln file is
+# Copy the entire source code (including projects)
+COPY src/ ./src/
 
-# Restore dependencies
-RUN dotnet restore leaderboard.sln
+# Restore dependencies using the solution file
+RUN dotnet restore "leaderboard.sln"
+
+# Set the working directory to the source directory where the actual build happens
+WORKDIR /app/src
 
 # Build the application
 RUN dotnet build --configuration Release --output /app/build
+
 
 # Publish the application
 RUN dotnet publish --configuration Release --output /app/publish
