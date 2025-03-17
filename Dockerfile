@@ -1,30 +1,21 @@
-# Use the official .NET SDK image for building the application
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Use the official .NET SDK image
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the solution file first
+# Copy the solution and project files first
 COPY leaderboard.sln ./
+COPY src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj ./
 
-# Copy the entire source code (including projects)
-COPY src/ ./src/
-
-# Restore dependencies using the solution file
+# Restore dependencies
 RUN dotnet restore "leaderboard.sln"
 
-# Set the working directory to the source directory where the actual build happens
-WORKDIR /app/src
+# Copy the rest of the source code
+COPY src/Server/Services/LeaderBoard.GameEventsProcessor/ ./
+
+# Set the working directory to the project folder
+WORKDIR /app
 
 # Build the application
-RUN dotnet build --configuration Release --output /app/build
-
-
-# Publish the application
-RUN dotnet publish --configuration Release --output /app/publish
-
-# Use the official .NET runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
-WORKDIR /app
-COPY --from=build /app/publish .
-
-ENTRYPOINT ["dotnet", "LeaderBoard.GameEventsProcessor.dll"]
+RUN dotnet build "LeaderBoard.GameEventsProcessor.csproj" --configuration Release --output /app/build
