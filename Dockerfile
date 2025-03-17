@@ -4,18 +4,20 @@ FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the solution and project files first
+# Copy the solution file
 COPY leaderboard.sln ./
-COPY src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj ./
 
-# Restore dependencies
+# Copy only the necessary project files to restore dependencies
+COPY src/Server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj src/Server/Services/LeaderBoard.GameEventsProcessor/
+
+# Restore dependencies using the solution file
 RUN dotnet restore "leaderboard.sln"
 
-# Copy the rest of the source code
-COPY src/Server/Services/LeaderBoard.GameEventsProcessor/ ./
+# Copy the entire source code
+COPY . ./
 
 # Set the working directory to the project folder
-WORKDIR /app
+WORKDIR /app/src/Server/Services/LeaderBoard.GameEventsProcessor/
 
 # Build the application
 RUN dotnet build "LeaderBoard.GameEventsProcessor.csproj" --configuration Release --output /app/build
