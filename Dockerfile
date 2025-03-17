@@ -1,33 +1,34 @@
-# Use the .NET 9.0 SDK
-FROM mcr.microsoft.com/dotnet/sdk:9.0
-
-# Set the working directory inside the container
+# Use .NET SDK 9.0 for building the application
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /app
 
-# Copy the solution file first
-COPY leaderboard.sln ./
-
-# Copy all project files before running restore
-COPY src/server/CacheStrategies/LeaderBoard.ReadThrough/LeaderBoard.ReadThrough.csproj src/server/CacheStrategies/LeaderBoard.ReadThrough/
+# Copy the solution and project files
+COPY *.sln ./
+COPY src/server/Services/LeaderBoard.SignalR/LeaderBoard.SignalR.csproj src/server/Services/LeaderBoard.SignalR/
+COPY src/server/Services/LeaderBoard.GameEventsSource/LeaderBoard.GameEventsSource.csproj src/server/Services/LeaderBoard.GameEventsSource/
+COPY src/server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj src/server/Services/LeaderBoard.GameEventsProcessor/
 COPY src/server/CacheStrategies/LeaderBoard.WriteBehind/LeaderBoard.WriteBehind.csproj src/server/CacheStrategies/LeaderBoard.WriteBehind/
 COPY src/server/CacheStrategies/LeaderBoard.WriteThrough/LeaderBoard.WriteThrough.csproj src/server/CacheStrategies/LeaderBoard.WriteThrough/
-COPY src/server/Services/LeaderBoard.GameEventsProcessor/LeaderBoard.GameEventsProcessor.csproj src/server/Services/LeaderBoard.GameEventsProcessor/
-COPY src/server/Services/LeaderBoard.GameEventsSource/LeaderBoard.GameEventsSource.csproj src/server/Services/LeaderBoard.GameEventsSource/
-COPY src/server/Services/LeaderBoard.SignalR/LeaderBoard.SignalR.csproj src/server/Services/LeaderBoard.SignalR/
+COPY src/server/CacheStrategies/LeaderBoard.ReadThrough/LeaderBoard.ReadThrough.csproj src/server/CacheStrategies/LeaderBoard.ReadThrough/
 COPY src/server/Shared/LeaderBoard.SharedKernel/LeaderBoard.SharedKernel.csproj src/server/Shared/LeaderBoard.SharedKernel/
 COPY src/server/Shared/LeaderBoard.DbMigrator/LeaderBoard.DbMigrator.csproj src/server/Shared/LeaderBoard.DbMigrator/
 
-# Debugging step to verify files before restoring dependencies
-RUN ls -R /app/src/server/shared
+# Restore dependencies
+RUN dotnet restore
 
-# Restore dependencies using the solution file
-RUN dotnet restore "leaderboard.sln"
-
-# Copy the entire source code after restoring dependencies
-COPY . ./
-
-# Set the working directory to the main project directory
-WORKDIR /app/src/server/Services/LeaderBoard.GameEventsProcessor/
+# Copy the rest of the source code
+COPY . .
 
 # Build the application
-RUN dotnet build "LeaderBoard.GameEventsProcessor.csproj" --configuration Release --output /app/build
+RUN dotnet publish -c Release -o /app/out
+
+# Runtime environment
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/out .
+
+# Expose port (adjust as needed)
+EXPOSE 5000
+
+# Run the application
+ENTRYPOINT ["dotnet", "LeaderBoard.SignalR.dll"]
