@@ -44,7 +44,7 @@ pipeline {
               stage('Docker Build') {
             steps {
                 script {
-                    bat 'docker build -t ${DOCKER_IMAGE_NAME} .'
+                    bat "docker build -t %DOCKER_IMAGE_NAME% ."
                 }
             }
         }
@@ -53,8 +53,8 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'docker-credentials') {
-                        bat 'docker tag ${DOCKER_IMAGE_NAME} your-docker-username/${DOCKER_IMAGE_NAME}:latest'
-                        bat 'docker push your-docker-username/${DOCKER_IMAGE_NAME}:latest'
+                        bat 'docker tag %DOCKER_IMAGE_NAME% your-docker-username/%DOCKER_IMAGE_NAME%:latest'
+                        bat 'docker push your-docker-username/%DOCKER_IMAGE_NAME%:latest'
                     }
                 }
             }
@@ -62,7 +62,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    bat 'docker run -d -p 8080:80 --name game-leaderboard ${DOCKER_IMAGE_NAME}'
+                    bat 'docker run -d -p 8080:80 --name game-leaderboard %DOCKER_IMAGE_NAME%'
                 }
             }
         }
