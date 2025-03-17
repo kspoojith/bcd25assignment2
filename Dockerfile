@@ -1,5 +1,5 @@
 # Use the correct .NET SDK version (8.0)
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0
 
 # Set the working directory inside the container
 WORKDIR /
