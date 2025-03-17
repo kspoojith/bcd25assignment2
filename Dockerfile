@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory inside the container
-WORKDIR /app
+WORKDIR /
 
 # Copy the solution file first
 COPY leaderboard.sln ./
