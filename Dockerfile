@@ -1,8 +1,8 @@
-# Use the official .NET SDK image
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+# Use the correct .NET SDK version (8.0)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 # Set the working directory inside the container
-WORKDIR /
+WORKDIR /app
 
 # Copy the solution file first
 COPY leaderboard.sln ./
